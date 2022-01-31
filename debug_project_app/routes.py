@@ -1,4 +1,4 @@
-from debug_project_app import app, Message, mail
+from debug_project_app import app, db, Message, mail
 from flask import render_template, request, redirect, url_for
 
 # Import for Forms
@@ -13,18 +13,18 @@ from flask_login import login_required,login_user, current_user,logout_user
 # Home Route
 @app.route('/')
 def home():
-    posts = Post.query.all
-    returnrender_template("homes.html", posts = posts)
+    posts = Post.query.all()
+    return render_template('home.html', posts = posts)
 
 # Register Route
 @app.route('/register', methods=['GET','POST'])
 def register():
     form = UserInfoForm()
-    if request.method = 'POST' and form.validate():
+    if form.validate_on_submit():
         # Get Information
         username = form.username.data
         password = form.password.data
-        email = form.email
+        email = form.email.data
         print("\n",username,password,email)
         # Create an instance of User
         user = User(username,email,password)
@@ -34,26 +34,26 @@ def register():
         db.session.commit()
 
         # Flask Email Sender 
-        msg = Message(f'Thanks for Signing Up! {email}', recipients=[email])
-        msg.body = ('Congrats on signing up! Looking forward to your posts!')
-        msg.html = ('<h1> Welcome to debug_project_app!</h1>' '<p> This will be fun! </p>')
+        # msg = Message(f'Thanks for Signing Up! {email}', recipients=[email])
+        # msg.body = ('Congrats on signing up! Looking forward to your posts!')
+        # msg.html = ('<h1> Welcome to debug_project_app!</h1>' '<p> This will be fun! </p>')
 
-        mail.send(msg)
+        # mail.send(msg)
     return render_template('register.html',form = form)
 
 # Post Submission Route
 @app.route('/posts', methods=['GET','POST'])
 @login_required
 def posts():
-    post = PostForm
-    if request.method == 'POST' and post.validate():
+    post = PostForm()
+    if post.validate_on_submit():
         title = post.title.data
         content = post.content.data
-        user_id = current_user
+        user_id = current_user.id
         print('\n',title,content)
         post = Post(title,content,user_id)
 
-        db.session.add(post,posts)
+        db.session.add(post)
 
         db.session.commit()
         return redirect(url_for('posts'))

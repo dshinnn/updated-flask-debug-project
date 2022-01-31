@@ -12,7 +12,7 @@ from flask_login import UserMixin
 # Create the current user_manager using the user_login function
 # Which is a decorator (used in this case as callback function)
 @login.user_loader
-def load_user(user_id):
+def get_user(user_id):
     return User.query.get(int(user_id))
 
 class User(db.Model,UserMixin):
@@ -22,14 +22,14 @@ class User(db.Model,UserMixin):
     password = db.Column(db.String(256), nullable = False)
     post = db.relationship('Post', backref = 'author', lazy = True)
 
-    def __init__(self,username,email,password):
+    def __init__(self,username,email, password):
         self.username = username
         self.email = email
         self.password = self.set_password(password)
 
-        def set_password(self,password):
-            self.pw_hash = generate_password_hash(password)
-            return self.pw_hash
+    def set_password(self,password):
+        self.pw_hash = generate_password_hash(password)
+        return self.pw_hash
 
     def __repr__(self):
         return f'{self.username} has been created with {self.email}'
